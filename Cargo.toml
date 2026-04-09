@@ -1,0 +1,41 @@
+[package]
+name = "bicat"
+version = "0.1.0"
+authors = ["Steven Xu <stevenxxiu@gmail.com>"]
+repository = "https://github.com/stevenxxiu/bicat"
+description = "Show image via the Kitty image protocol"
+edition = "2021"
+license = "MIT"
+rust-version = "1.94"
+
+[dependencies]
+base64 = "0.22"
+clap = { version = "4.6.0", features = ["derive"] }
+cli-log = "2.1"
+crokey = "1.4"
+crossterm = "0.29.0"
+custom_error = "1.9.2"
+flate2 = "1.1"
+libc = "0.2"
+lru = "0.16.3"
+once_cell = "1.21" # waiting for https://github.com/rust-lang/rust/issues/109736
+resvg = "0.47"
+rustc-hash = "2"
+serde = { version = "1.0", features = ["derive"] }
+tempfile = "3.27"
+zune-core = "0.4.12"
+zune-image = "0.4.15"
+
+[build-dependencies]
+clap = { version = "4.6", features = ["derive", "cargo"] }
+clap_complete = "4.6"
+clap_mangen = "0.3.0"
+
+[profile.dev]
+debug = false
+
+[profile.release]
+debug = false
+lto = "fat"
+codegen-units = 1 # this removes a few hundred bytes from the final exec size
+strip = "symbols"

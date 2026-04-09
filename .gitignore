@@ -1,0 +1,4 @@
+/target/
+
+# *Neovim*
+/.vscode/launch.json
