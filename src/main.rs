@@ -12,6 +12,10 @@ use std::path::PathBuf;
 use clap::Parser;
 use cli_log::*;
 use crossterm::cursor::MoveTo;
+use crossterm::style::{
+    ResetColor,
+    SetForegroundColor,
+};
 use crossterm::{
     queue,
     style::{
@@ -33,6 +37,10 @@ struct Args {
     y: u16,
     w: u16,
     h: u16,
+    #[arg(long)]
+    fg: Option<u8>,
+    #[arg(long)]
+    bg: Option<u8>,
 }
 
 pub fn main() -> Result<(), ProgramError> {
@@ -56,8 +64,9 @@ pub fn main() -> Result<(), ProgramError> {
     let mut w = BufWriter::new(std::io::stderr());
 
     let mut kitty_manager = kitty::manager().lock().unwrap();
-    let _kitty_image_id =
-        kitty_manager.try_print_image(&mut w, &source_img, path, &area, Color::Reset)?;
+    let fg = args.fg.map(Color::AnsiValue).unwrap_or(Color::Reset);
+    let bg = args.bg.map(Color::AnsiValue).unwrap_or(Color::Reset);
+    let _kitty_image_id = kitty_manager.try_print_image(&mut w, &source_img, path, &area, bg)?;
     w.flush().unwrap();
 
     let dim = source_img.dimensions();
@@ -66,7 +75,7 @@ pub fn main() -> Result<(), ProgramError> {
         return Ok(());
     }
     queue!(w, MoveTo(area.left, area.top + area.height)).unwrap();
-    queue!(w, Print(s)).unwrap();
+    queue!(w, SetForegroundColor(fg), Print(s), ResetColor).unwrap();
     w.flush().unwrap();
 
     Ok(())
