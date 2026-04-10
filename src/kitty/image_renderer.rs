@@ -10,11 +10,6 @@ use {
             get_tmux_tail,
         },
     },
-    crate::image::zune_compat::{
-        DynamicImage,
-        RgbImage,
-        RgbaImage,
-    },
     crate::{
         display::{
             Area,
@@ -23,6 +18,11 @@ use {
             fill_bg,
         },
         errors::ProgramError,
+        image::zune_compat::{
+            DynamicImage,
+            RgbImage,
+            RgbaImage,
+        },
     },
     base64::{
         self,
@@ -30,6 +30,11 @@ use {
         engine::general_purpose::STANDARD as BASE64,
     },
     cli_log::*,
+    crc_fast::{
+        CrcAlgorithm::Crc32IsoHdlc,
+        checksum_file,
+        crc32_iso_hdlc,
+    },
     crokey::crossterm::{
         QueueableCommand,
         cursor,
@@ -198,7 +203,6 @@ fn div_ceil(
 pub struct KittyImageRenderer {
     cell_width: u32,
     cell_height: u32,
-    next_id: usize,
     options: KittyImageRendererOptions,
     /// paths of temp files which have been written, with key
     /// being the input image path
@@ -235,7 +239,14 @@ impl KittyImage {
         } else {
             KittyImageData::Image { data: src.into() }
         };
-        let id = renderer.new_id();
+        let checksum = match data {
+            KittyImageData::Png { ref path } => {
+                checksum_file(Crc32IsoHdlc, path.to_str().unwrap(), None).expect("checksum_file")
+                    as usize
+            }
+            KittyImageData::Image { ref data } => crc32_iso_hdlc(&data.bytes()) as usize,
+        } as usize;
+        let id = checksum & ((1 << 24) - 1);
         let display = renderer.options.display;
         let is_tmux = renderer.options.is_tmux;
         let tmux_nest_count = if is_tmux { get_tmux_nest_count() } else { 0 };
@@ -477,16 +488,9 @@ impl KittyImageRenderer {
             .map(|(cell_width, cell_height)| Self {
                 cell_width,
                 cell_height,
-                next_id: 1,
                 options,
                 temp_files,
             })
-    }
-    /// return a new image id
-    fn new_id(&mut self) -> usize {
-        let new_id = self.next_id;
-        self.next_id += 1;
-        new_id
     }
     fn is_path_png(path: &Path) -> bool {
         match path.extension() {

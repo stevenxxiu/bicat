@@ -12,6 +12,7 @@ rust-version = "1.94"
 base64 = "0.22"
 clap = { version = "4.6.0", features = ["derive"] }
 cli-log = "2.1"
+crc-fast = "1.10.0"
 crokey = "1.4"
 crossterm = "0.29.0"
 custom_error = "1.9.2"
