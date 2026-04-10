@@ -47,7 +47,10 @@ pub fn main() -> Result<(), ProgramError> {
         height: args.h,
     };
 
-    let path = args.path.as_path();
+    // When using the file transmission medium, PNG files are described by paths, so use an absolute path
+    let path_buf = std::path::absolute(args.path.as_path())?;
+    let path = path_buf.as_path();
+
     let source_img = time!("decode image", path, SourceImage::new(path)?);
 
     let mut w = BufWriter::new(std::io::stderr());
