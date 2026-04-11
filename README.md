@@ -1,6 +1,8 @@
 # BICat
 Show image via the *Kitty* image protocol.
 
+Works over SSH.
+
 To work with nested *Tmux*, use the `$TMUX_NEST_COUNT` environment variable.
 
 To use with *Vifm*, set in `~/.config/vifm/vifmrc` with desired colors:
